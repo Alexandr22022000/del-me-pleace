@@ -1,3 +1,51 @@
+let safariFix;
+
+class SafariFix {
+    constructor (createWidget) {
+        this.createWidget = createWidget;
+
+        this.createWidget();
+        this.replaceLinks();
+    }
+
+    // virtual redirect
+    redirect (page) {
+        document.body.innerHTML = '<h1>Loading...</h1>';
+        this.createWidget();
+
+        $.ajax({
+            url: page,
+        }).done((data) => {
+            document.body.innerHTML = SafariFix.getTagContent('body', data);
+            document.head.innerHTML = SafariFix.getTagContent('head', data);
+            window.history.pushState(null, null, page);
+            this.createWidget();
+            this.replaceLinks();
+        });
+    }
+
+    // add virtual redirect to links in body
+    replaceLinks () {
+        const links = document.getElementsByTagName('a');
+        for (let key in links) {
+            if (links[key].href) {
+                links[key].onclick = (e) => {
+                    this.redirect(e.target.href);
+                    return false;
+                };
+            }
+        }
+    }
+
+    static getTagContent (tag, html) {
+        let start = html.indexOf('<' + tag) + 1;
+        start = html.indexOf('>', start) + 1;
+        let end = html.lastIndexOf(`</${tag}>`);
+        return html.substring(start, end);
+    }
+}
+
+// for testing audio api
 const audioWork = () => {
     navigator.getUserMedia(
         { audio: true },
@@ -26,67 +74,38 @@ const audioWork = () => {
             console.log(error);
         }
     );
-
-
 };
 
-const widgetHtml = `
-        <div id="widget" style="border: black 1px solid; width: 300px">
+// create widget interface
+const createWidget = () => {
+    const widgetHtml = `
+        <div id="widget" style="border: black 1px solid; width: 500px; position: absolute; top: 300px">
             <h1>VoiceSell widget:</h1>
             <button id="home-button">Go home</button>
             <button id="search-button">Go search</button>
+            <button id="checkout-button">Go checkout</button>
+            <button id="about-button">Go about</button>
             <h3 id="sound"></h3>
         </div>
     `;
+    document.body.innerHTML += widgetHtml;
 
-const addCallbacks = () => {
-    const buttons = [
-        {id: 'home-button', page: '/'},
-        {id: 'search-button', page: '/search'},
-    ];
+    const buttons = {
+        'home-button': '/',
+        'search-button': '/search',
+        'checkout-button': '/checkout',
+        'about-button': '/about',
+    };
 
-    buttons.map(button => {
-        document.getElementById(button.id).onclick = () => {
-            redirect(button.page);
+    for (let key in buttons) {
+        document.getElementById(key).onclick = () => {
+            safariFix.redirect(buttons[key]);       // for safari
+            //window.location.href = buttons[key];  // for other browsers
         };
-    });
-};
-
-const replaceLinks = () => {
-    const links = document.getElementsByTagName('a');
-    for (let key in links) {
-        if (links[key].href) {
-            links[key].onclick = (e) => {
-                redirect(e.target.href);
-                return false;
-            };
-        }
     }
 };
 
-const getTagContent = (tag, html) => {
-    let start = html.indexOf('<' + tag) + 1;
-    start = html.indexOf('>', start) + 1;
-    let end = html.lastIndexOf(`</${tag}>`);
-    return html.substring(start, end);
-};
-
-const redirect = (page) => {
-    $.ajax({
-        url: page,
-    }).done((data) => {
-        document.body.innerHTML = getTagContent('body', data);
-        document.head.innerHTML = getTagContent('head', data);
-        window.history.pushState(null, null, page);
-        document.body.innerHTML += widgetHtml;
-        addCallbacks();
-        replaceLinks();
-    });
-};
-
 window.onload = () => {
-    document.body.innerHTML += widgetHtml;
-    addCallbacks();
-    replaceLinks();
+    safariFix = new SafariFix(createWidget);    // for safari
     audioWork();
 };
