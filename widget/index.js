@@ -28,7 +28,7 @@ class SafariFix {
     replaceLinks () {
         const links = document.getElementsByTagName('a');
         for (let key in links) {
-            if (links[key].href) {
+            if (links[key].href && (links[key].href.substring(0, 4) !== 'http' || links[key].href.indexOf(document.location.host) !== -1)) {
                 links[key].onclick = (e) => {
                     this.redirect(e.target.href);
                     return false;
