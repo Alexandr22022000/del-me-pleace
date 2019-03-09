@@ -3,7 +3,7 @@ let safariFix;
 class SafariFix {
     constructor (createWidget) {
         this.createWidget = createWidget;
-        this.notUpdateScripts = ['http://localhost:3000/index.js', 'jquery.min.js'];
+        this.notUpdateScripts = ['http://localhost:3000/index.js', 'jquery.min.js', '^https?://[a-z.0-9:]+/index.js$'];
 
         this.createWidget();
         this.replaceLinks();
@@ -49,7 +49,8 @@ class SafariFix {
         scripts = scripts.filter(script => {
             let ok = true;
             notUpdateScripts.forEach(notUpdate => {
-                if (script.src && script.src.indexOf(notUpdate) !== -1) ok = false;
+                const reqgexp = new RegExp(notUpdate, 'i');
+                if (script.src && script.src.search(reqgexp) !== -1) ok = false;
             });
             return ok;
         });

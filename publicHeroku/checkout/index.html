@@ -4,7 +4,16 @@
     <meta charset="UTF-8">
     <title>Site</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="/checkout/script.js"></script>
     <script src="/index.js"></script>
+    <script>
+        // Example of usage js in html
+        $('document').ready(function() {
+            $('#say_html').on('click', () => {
+                alert("Checkout");
+            });
+        });
+    </script>
 </head>
 <body>
 <a href="/">Main</a>
@@ -13,5 +22,8 @@
 <a href="/about">About</a>
 <a href="https://www.google.ru">Google</a>
 <h1>This is checkout page</h1>
+<button id="say_js">Say page JS</button>
+<button id="say_jquery">Say page JQUERY</button>
+<button id="say_html">Say page JQUERY HTML</button>
 </body>
 </html>
