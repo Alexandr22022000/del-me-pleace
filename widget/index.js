@@ -3,6 +3,7 @@ let safariFix;
 class SafariFix {
     constructor (createWidget) {
         this.createWidget = createWidget;
+        this.notUpdateScripts = ['http://localhost:3000/index.js', 'jquery.min.js'];
 
         this.createWidget();
         this.replaceLinks();
@@ -21,6 +22,7 @@ class SafariFix {
             window.history.pushState(null, null, page);
             this.createWidget();
             this.replaceLinks();
+            this.loadScripts();
         });
     }
 
@@ -35,6 +37,51 @@ class SafariFix {
                 };
             }
         }
+    }
+
+    loadScripts () {
+        let scripts = document.getElementsByTagName('script'),
+            notUpdateScripts = this.notUpdateScripts;
+
+        scripts = Array.from(scripts);
+
+        scripts = scripts.filter(script => {
+            let ok = true;
+            notUpdateScripts.forEach(notUpdate => {
+                if (script.src && script.src.indexOf(notUpdate) !== -1) ok = false;
+            });
+            return ok;
+        });
+
+        let scriptsSrc = scripts.filter(script => script.src),
+            scriptsCode = scripts.filter(script => script.innerHTML);
+
+        scriptsSrc = scriptsSrc.map(script => script.src);
+        scriptsCode = scriptsCode.map(script => script.innerHTML);
+
+        scriptsCode.forEach((code) => {
+            let script = document.createElement('script');
+            script.innerHTML = code;
+            script.async = false;
+            document.head.appendChild(script);
+        });
+
+        let i = 0;
+        const onloadScript = () => {
+            i++;
+            if (i === scriptsSrc.length) {
+                window.onload();
+                alert("AFTER TEST");
+            }
+        };
+
+        scriptsSrc.forEach((src) => {
+            let script = document.createElement('script');
+            script.src = src;
+            script.async = false;
+            script.onload = onloadScript;
+            document.head.appendChild(script);
+        });
     }
 
     static getTagContent (tag, html) {
@@ -105,7 +152,16 @@ const createWidget = () => {
     }
 };
 
-window.onload = () => {
-    safariFix = new SafariFix(createWidget);    // for safari
-    audioWork();
-};
+var s = function () {
+    var oldOnload = window.onload,
+        isLoaded = false;
+    window.onload = () => {
+        if (!isLoaded) {
+            safariFix = new SafariFix(createWidget);    // for safari
+            audioWork();
+            isLoaded = true;
+        }
+
+        if (oldOnload) oldOnload();
+    };
+}();
