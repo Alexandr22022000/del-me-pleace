@@ -39,6 +39,7 @@ class SafariFix {
         }
     }
 
+    //load and run scripts
     loadScripts () {
         let scripts = document.getElementsByTagName('script'),
             notUpdateScripts = this.notUpdateScripts;
@@ -69,10 +70,8 @@ class SafariFix {
         let i = 0;
         const onloadScript = () => {
             i++;
-            if (i === scriptsSrc.length) {
+            if (i === scriptsSrc.length)
                 window.onload();
-                alert("AFTER TEST");
-            }
         };
 
         scriptsSrc.forEach((src) => {
@@ -135,7 +134,10 @@ const createWidget = () => {
             <h3 id="sound"></h3>
         </div>
     `;
-    document.body.innerHTML += widgetHtml;
+
+    let widget = document.createElement('div');
+    widget.innerHTML = widgetHtml;
+    document.body.appendChild(widget);
 
     const buttons = {
         'home-button': '/',
